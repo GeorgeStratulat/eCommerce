@@ -1,5 +1,8 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'].'/tutorial/core/init.php';
+if(!is_logged_in()){
+	login_error_redirect();
+}
 include 'includes/head.php';
 include 'includes/navigation.php';
 
@@ -41,9 +44,9 @@ $saved_image = '';
  	$parentResult = mysqli_fetch_assoc($parentQ);
  	$parent = ((isset($_POST['parent']) && $_POST['parent'] != '')?sanitize($_POST['parent']):$parentResult['parent']);
  	$price = ((isset($_POST['price']) && $_POST['price'] != '')?sanitize($_POST['price']):$product['price']);
- 	$list_price = ((isset($_POST['list_price']) && $_POST['list_price'] != '')?sanitize($_POST['list_price']):$product['list_price']);
+ 	$list_price = ((isset($_POST['list_price']))?sanitize($_POST['list_price']):$product['list_price']);
  	$sizes = ((isset($_POST['sizes']) && $_POST['sizes'] != '')?sanitize($_POST['sizes']):$product['sizes']);
- 	$description = ((isset($_POST['description']) && $_POST['description'] != '')?sanitize($_POST['description']):$product['description']);
+ 	$description = ((isset($_POST['description']))?sanitize($_POST['description']):$product['description']);
  	$sizes = rtrim($sizes,',');
  	$saved_image = (($product['image'] != '')?$product['image']:'');
  	$dbpath = $saved_image;
@@ -65,18 +68,20 @@ $saved_image = '';
 	}
 $sizesArray = array();
 if($_POST){
-	$dbpath = '';
 	$errors[] = array();	
 	$required = array('title', 'brand', 'price', 'parent', 'child', 'sizes');
+	$photoName = array();
 	foreach ($required as $field) {
 		if($_POST[$field] == ''){
 			$errors[] = 'All mandatory fields must be filled';
 			break;
 		}
 	}
-	if(!empty($_FILES)){
+	$photocount = count($_FILES['photo']['name']);
+	if($photocount > 0){
+		for($i = 0; $i<$photocount; $i++){
 		$photo = $_FILES['photo'];
-		$name = $photo['name'];
+		$name = $_FILES['photo']['name'][i];
 		$nameArray = explode('.', $name);
 		$fileName = $nameArray[0];
 		$fileExtension = $nameArray[1];
@@ -102,13 +107,15 @@ if($_POST){
 		if(($fileExtension != $mimeExtension) && ($mimeExtension == 'jpeg' && $fileExtension != 'jpg')){
 			$errors[] = 'File extension does not match the file';
 		}
-
+		}
 	}
 	if(!$errors){
 	echo display_errors($errors);
 	}
 	else{
-		move_uploaded_file($tempLocation, $uploadPath);
+		if(!empty($_FILES)){
+			move_uploaded_file($tempLocation, $uploadPath);
+	    }
 		$insertSql = "INSERT INTO products (title, price, list_price, brand, categories, sizes, image, description) 
 		VALUES ('$title', '$price', '$list_price', '$brand', '$category', '$sizes', '$dbpath', '$description') ";
 		if(isset($_GET['edit'])){
@@ -173,7 +180,7 @@ if($_POST){
 				</div>
 			<?php else: ?>
 			<label for="photo">Product picture:</label>
-			<input type="file" name="photo" id="photo" class="form-control">
+			<input type="file" name="photo[]" id="photo" class="form-control" multiple>
 		<?php endif; ?>
 		</div>
 		<div class="form-group col-md-6">

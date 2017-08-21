@@ -47,7 +47,8 @@ $errors = array();
 		if(!empty($errors)){
 			echo display_errors($errors);
 		}else{
-
+			$user_id = $user['id'];
+			login($user_id);
 		}
 	}
 	?>

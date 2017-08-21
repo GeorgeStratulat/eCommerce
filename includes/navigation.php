@@ -17,10 +17,12 @@ $pquery = $db->query($sql);
   			  <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?php echo $parent['category']; ?><span class="caret"></span></a>
   			  <ul class="dropdown-menu" role="menu">
            <?php while($child = mysqli_fetch_assoc($cquery)) : ?>
-  			  	<li><a href="#"><?php echo $child['category']; ?></a></li>
+  			  	<li><a href="category.php?cat=<?=$child['id'];?>"><?php echo $child['category']; ?></a></li>
           <?php endwhile; ?>
   			  </ul>
   			</li>
      <?php endwhile; ?>
+     <li class="right" style="position:absolute;right:20px;"><a href="cart.php"><span class="glyphicon glyphicon-shopping-cart"></span> My cart</a></li>
+     </ul>
   	</div> 
   </nav>
